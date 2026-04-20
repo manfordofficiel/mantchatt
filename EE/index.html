@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Chat - Gestion utilisateurs</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div class="app">
+		<aside class="sidebar">
+			<button id="historyBtn" style="margin-bottom:8px;background:#fbbf24;color:#23232b;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Historique & Journal</button>
+			<div id="historyModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1100;align-items:center;justify-content:center;">
+				<div style="background:white;padding:24px;border-radius:12px;min-width:340px;max-width:95vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;max-height:90vh;overflow:auto;">
+					<button id="closeHistory" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+					<h3>Historique des appels</h3>
+					<ul id="callHistoryList" style="width:100%;margin-bottom:18px;"></ul>
+					<h3>Journal d'activité</h3>
+					<ul id="activityLogList" style="width:100%;"></ul>
+				</div>
+			</div>
+			<button id="themeToggleBtn" style="margin-bottom:8px;background:#222;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Mode sombre</button>
+			<h2>MAMBU APP</h2>
+			<input type="text" id="searchInput" placeholder="🔍 Rechercher..." style="margin-bottom:8px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;width:90%;" />
+			<button id="showAddUserForm" style="margin-bottom:8px;background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Ajouter un contact</button>
+			<button id="myContactsBtn" style="margin-bottom:8px;background:#4f46e5;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Mes contacts</button>
+			<button id="settingsBtn" style="margin-bottom:8px;background:#f3f4f6;color:rgb(43, 9, 194);border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Paramètres ⚙️</button>
+			<button id="viewProfileBtn" style="margin-bottom:8px;background:#e0e7ff;color:rgb(43, 9, 194);border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Voir mon profil</button>
+			<button id="statusBtn" style="margin-bottom:8px;background:#e0e7ff;color:rgb(43, 9, 194);border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Statut</button>
+			<button id="weatherBtn" style="margin-bottom:8px;background:#e0e7ff;color:#4f46e5;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Météo</button>
+			<button id="inviteBtn" style="margin-bottom:8px;background:#f3f3fa;color:rgb(43, 9, 194);border:none;padding:8px 12px;border-radius:8px;cursor: pointer;">Inviter un contact</button>
+			<button id="downloadAudioBtn" style="margin-bottom:8px;background:#4f46e5;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Télécharger audio</button>
+			<button id="healthBtn" style="margin-bottom:8px;background:#22c55e;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Ma santé</button>
+			<button id="tasksBtn" style="margin-bottom:8px;background:#f59e42;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;">Mes tâches</button>
+			<input type="file" id="importDataInput" accept="application/json" style="display:none;" />
+			<form id="addUserForm" class="add-user" style="display:none;">
+				<input type="text" id="userName" placeholder="Nom (optionnel)" />
+				<input type="tel" id="userNumber" placeholder="Numéro (+243...)" required />
+				<button type="submit">Ajouter</button>
+			</form>
+			<ul id="userList" class="user-list"></ul>
+			<form id="editUserForm" class="add-user" style="display:none; margin-top:8px;">
+				<input type="text" id="editUserName" placeholder="Nom" />
+				<input type="tel" id="editUserNumber" placeholder="Numéro" required />
+				<button type="submit">Modifier</button>
+				<button type="button" id="cancelEdit" style="background:none;border:none;color:rgb(43, 9, 194);cursor:pointer;">Annuler</button>
+			</form>
+		</aside>
+		<main class="chat">
+			<header id="chatHeader" class="chat-header">
+				<span id="chatContactName">Sélectionnez un contact</span>
+				<button id="callBtn" title="Appel vocal" style="margin-left:12px;background:#4f46e5;color:white;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;">📞appel vocal</button>
+				<button id="videoCallBtn" title="Appel vidéo" style="margin-left:6px;background:#4f46e5;color:white;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;">🎥 appel video</button>
+			</header>
+			<div id="messages" class="messages"></div>
+			<form id="sendForm" class="send-form" autocomplete="off">
+				<input type="text" id="messageInput" placeholder="Écrire un message..." />
+				<button type="submit">Envoyer</button>
+				<label title="Photo">
+					<input type="file" id="photoInput" accept="image/*" style="display:none;" />
+					 📷
+				</label>
+				<label title="Vidéo">
+					<input type="file" id="videoInput" accept="video/*" style="display:none;" />
+					 🎥
+				</label>
+				<label title="Musique">
+					<input type="file" id="musicInput" accept="audio/*" style="display:none;" />
+					 🎵
+				</label>
+				<label title="Document">
+					<input type="file" id="docInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" style="display:none;" />
+					 📄
+				</label>
+				<label title="Audio">
+					<input type="file" id="audioInput" accept="audio/*" style="display:none;" />
+					 🎤
+				</label>
+			</form>
+		</main>
+	</div>
+	<div id="settingsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1000;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;">
+			<button id="closeSettings" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Profil utilisateur</h3>
+			<form id="profileForm" style="display:flex;flex-direction:column;gap:10px;">
+				<input type="text" id="profileName" placeholder="Votre nom" />
+				<input type="tel" id="profileNumber" placeholder="Votre numéro" />
+				<input type="email" id="profileEmail" placeholder="Adresse mail" />
+				<input type="file" id="profilePhoto" accept="image/*" />
+				<button type="button" id="takePhotoBtn" style="background:#4f46e5;color:white;border:none;padding:8px 12px;border-radius:8px;margin-bottom:8px;">Prendre une photo</button>
+				<input type="text" id="profilePosition" placeholder="Votre position (ville, pays)" />
+				<select id="appLang">
+					<option value="fr">Français</option>
+					<option value="en">English</option>
+					<option value="pt">Português</option>
+				</select>
+				<button type="submit" style="background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;">Enregistrer</button>
+			</form>
+			
+		</div>
+	</div>
+	<div id="profileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1001;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+			<button id="closeProfile" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Mon profil</h3>
+			<div id="profileViewContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;"></div>
+			<button id="editProfileBtn" style="margin-top:16px;background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;">Modifier mon profil</button>
+		</div>
+	</div>
+	<div id="statusModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1002;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+			<button id="closeStatus" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Statuts des contacts</h3>
+			<div id="statusContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;"></div>
+			<button id="addStatusBtn" style="margin-top:16px;background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;">Ajouter un statut</button>
+		</div>
+	</div>
+	<div id="weatherModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1003;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+			<button id="closeWeather" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Météo sur 7 jours</h3>
+			<form id="weatherCityForm" style="margin-bottom:12px;display:flex;gap:8px;">
+				<input type="text" id="weatherCity" placeholder="Ville (ex: Kinshasa)" style="padding:6px;border-radius:6px;border:1px solid #ccc;" />
+				<button type="submit" style="background:var(--accent);color:white;border:none;padding:6px 12px;border-radius:6px;">Voir</button>
+			</form>
+			<div id="weatherContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;"></div>
+		</div>
+	</div>
+	<div id="myContactsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1002;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;max-height:80vh;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;">
+			<button id="closeMyContacts" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Mes contacts</h3>
+			<div id="myContactsList" style="overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px;"></div>
+		</div>
+	</div>
+	<div id="downloadAudioModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1004;align-items:center;justify-content:center;">
+		<div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+			<button id="closeDownloadAudio" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+			<h3>Télécharger un audio</h3>
+			<form id="audioSearchForm" style="margin-bottom:12px;display:flex;gap:8px;">
+				<input type="text" id="audioArtist" placeholder="Nom de l'artiste" style="padding:6px;border-radius:6px;border:1px solid #ccc;" />
+				<button type="submit" style="background:var(--accent);color:white;border:none;padding:6px 12px;border-radius:6px;">Rechercher</button>
+			</form>
+			<div id="audioResults" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;"></div>
+		</div>
+	</div>
+	<div id="healthModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1005;align-items:center;justify-content:center;">
+  <div style="background:white;padding:24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+    <button id="closeHealth" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+    <h3>Scanner votre empreinte digitale</h3>
+    <button id="scanFingerprintBtn" style="margin:16px 0;background:#22c55e;color:white;border:none;padding:10px 18px;border-radius:8px;font-size:18px;">Scanner 👆</button>
+    <div id="healthResult" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<div id="tasksModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:1006;align-items:center;justify-content:center;">
+  <div style="background:white;padding:24px;border-radius:12px;min-width:340px;max-width:95vw;box-shadow:0 2px 16px #0002;position:relative;display:flex;flex-direction:column;align-items:center;">
+    <button id="closeTasks" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;cursor:pointer;">✖</button>
+    <h3>Mes tâches</h3>
+    <form id="addTaskForm" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input type="text" id="taskText" placeholder="Tâche" required style="padding:6px;border-radius:6px;border:1px solid #ccc;min-width:120px;" />
+      <input type="date" id="taskDate" required style="padding:6px;border-radius:6px;border:1px solid #ccc;" />
+      <input type="time" id="taskTime" required style="padding:6px;border-radius:6px;border:1px solid #ccc;" />
+      <button type="submit" style="background:#f59e42;color:white;border:none;padding:6px 12px;border-radius:6px;">Ajouter</button>
+    </form>
+    <div id="tasksList" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;"></div>
+  </div>
+</div>
+	<script src="app.js"></script>
+</body>
+</html>
